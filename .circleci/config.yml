@@ -1,0 +1,34 @@
+version: 2.1
+
+general:
+  branches:
+    only:
+      - master
+
+orbs:
+  python: circleci/python@1.2
+
+workflows:
+  main:
+    jobs:
+      - build-package
+
+
+jobs:
+  build-package:
+    docker:
+      - image: cimg/python:3.8
+    steps:
+      - checkout
+      - python/install-packages:
+          pkg-manager: pip
+          # app-dir: ~/project/package-directory/  # If you're requirements.txt isn't in the root directory.
+          pip-dependency-file: requirements.txt
+      - python/install-packages:
+          pkg-manager: pip
+          args: build
+      - run:
+          name: build
+          command: python -m build
+      - store_artifacts:
+          path: dist/
