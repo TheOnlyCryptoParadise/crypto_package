@@ -1,10 +1,5 @@
 version: 2.1
 
-general:
-  branches:
-    only:
-      - master
-
 orbs:
   python: circleci/python@1.2
 
@@ -12,6 +7,9 @@ workflows:
   main:
     jobs:
       - build-package
+    when:
+      equal: [ master, << pipeline.git.branch >> ]
+
 
 
 jobs:
