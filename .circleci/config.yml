@@ -7,8 +7,7 @@ workflows:
   main:
     jobs:
       - build-package
-    when:
-      equal: [ master, << pipeline.git.branch >> ]
+
 
 
 
