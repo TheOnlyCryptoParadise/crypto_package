@@ -1,5 +1,4 @@
 from datetime import datetime
-
 import service_config as conf
 import requests
 from time import time
@@ -30,7 +29,7 @@ def get_candles(exchange: str, currency_pair: str, ticker: str, time_start=None,
     res = requests.get(conf.CANDLE_DATA_SERVICE + conf.EP_CANDLES, args)
 
     if res.status_code != 200:
-        raise Exception("Some exception occurred while connecting to server. Code ",res.status_code)
+        raise Exception("Some exception occurred while connecting to server."+str(res))
 
     candles = pandas.DataFrame(res.json()['data'])
 
