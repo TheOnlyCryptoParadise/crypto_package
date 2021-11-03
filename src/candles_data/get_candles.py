@@ -23,6 +23,8 @@ def get_candles(exchange: str, currency_pair: str, ticker: str, time_start=None,
             last_n_candles: int [OPTIONAL]
                 if you want to get last n candles pass a number of candles to get
 
+        Returns:
+            pandas DataFrame with candles data
     """
 
     args = _make_get_candles_args(exchange, currency_pair, ticker, time_start, time_end, last_n_candles)
