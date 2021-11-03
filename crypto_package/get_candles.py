@@ -1,5 +1,5 @@
 from datetime import datetime
-from conf import service_config as conf
+from crypto_package.conf import service_config as conf
 import requests
 from time import time
 import pandas
