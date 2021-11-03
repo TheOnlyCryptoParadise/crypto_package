@@ -1,5 +1,5 @@
 from datetime import datetime
-import service_config as conf
+from conf import service_config as conf
 import requests
 from time import time
 import pandas

@@ -1,6 +1,6 @@
 import pandas
 
-import service_config as conf
+from conf import service_config as conf
 import requests
 
 def get_live_price(exchange: str, currency_pairs: [str]):
