@@ -1,2 +1,2 @@
-from get_candles import get_candles
-from live_prices import get_live_price
+from crypto_package.get_candles import get_candles
+from crypto_package.live_prices import get_live_price
