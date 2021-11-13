@@ -17,10 +17,16 @@ def get_live_price(exchange: str, currency_pairs: [str]):
             2. pandas DataFrame which rows are titled by pair name and columns are value names
     """
     args = _make_get_price_args(exchange, currency_pairs)
-    res = requests.post(conf.CANDLE_DATA_SERVICE + conf.EP_LIVE_PRICES, json=args)
+    try:
+        res = requests.post(conf.CANDLE_DATA_SERVICE + conf.EP_LIVE_PRICES, json=args)
+    except requests.ConnectionError as e:
+        print("CONNECTION ERROR OCCURRED "+str(e))
+        return None, None
+
 
     if res.status_code != 200:
-        raise Exception("Some exception occurred while connecting to server."+str(res))
+        print("Some exception occurred while connecting to server."+str(res))
+        return None, None
 
     res = res.json()['data'][0]['data']
     pandas_res = pandas.DataFrame(res).T
