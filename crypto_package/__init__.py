@@ -1,2 +1,4 @@
 from crypto_package.get_candles import get_candles
 from crypto_package.live_prices import get_live_price
+from crypto_package.topic_subscribtion import subscribe_on_topics
+from crypto_package.topic_subscribtion import unsubscribe_on_topics
