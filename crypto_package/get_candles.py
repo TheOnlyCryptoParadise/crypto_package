@@ -38,9 +38,10 @@ def get_candles(exchange: str, currency_pair: str, ticker: str, time_start=None,
         print("Some exception occurred while connecting to server."+str(res))
         return None
 
-    candles = pandas.DataFrame(res.json()['data'])
+    clist = res.json()['data']
+    candles = pandas.DataFrame(clist)
 
-    return candles
+    return candles, clist
 
 
 def _make_get_candles_args(exchange, currency_pair, ticker, time_start, time_end, last_n_candles):
