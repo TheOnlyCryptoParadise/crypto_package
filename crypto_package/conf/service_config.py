@@ -4,3 +4,5 @@ CANDLE_DATA_SERVICE = environ.get("CANDLE_DATA_SERVICE_URL", "http://localhost:5
 EP_CANDLES = '/candles'
 EP_SETTINGS = '/settings'
 EP_LIVE_PRICES = '/currencyPairLiveInfo'
+EP_SUBSCRIBE = '/subscribeCandles'
+EP_UNSUBSCRIBE = '/unsubscribeCandles'
