@@ -1,13 +1,15 @@
 import logging
+from random import random, randint
+
 import crypto_package
 from datetime import date, datetime, timedelta
 # from pprint import pprint
 # from numpy import double
 import yaml
-# import talib.abstract as ta
-# import pydantic
+import talib.abstract as ta
+import pydantic
 
-# from analyze_functions import plot_balance
+from analyze_functions import plot_balance
 from crypto_package.fake_bot.models import Trade, AnalysisResult
 
 def candle_size_to_seconds(cs):
@@ -106,24 +108,28 @@ class FakeBot():
 
 
 
-# if __name__ == "__main__":
-#     logging.basicConfig(level=logging.INFO)
-#     def calc_ind(dataframe):
-#         dataframe['rsi'] = ta.RSI(dataframe, timeperiod=14)
-#         return dataframe
-#
-#     def buy_sig(dataframe):
-#         if dataframe.iloc[-1]['rsi'] > 70:
-#             return True
-#         else:
-#             return False
-#
-#     def sell_sig(dataframe):
-#         if dataframe.iloc[-1]['rsi'] < 30:
-#             return True
-#         else:
-#             return False
-#
-#     fbot = FakeBot("../work/bot1/config.yml")
-#     res = fbot.test_strategy(calc_ind, buy_sig, sell_sig, last_n_days=10)
-#     plot_balance(res)
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    def calc_ind(dataframe):
+        # dataframe['rsi'] = ta.RSI(dataframe, timeperiod=14)
+        return dataframe
+
+    def buy_sig(dataframe):
+        # r = randint(0,10)
+        # if r>5:
+        if dataframe.iloc[-1]['rsi'] > 70:
+            return True
+        else:
+            return False
+
+    def sell_sig(dataframe):
+        if dataframe.iloc[-1]['rsi'] < 30:
+        # r = randint(0, 10)
+        # if r > 5:
+            return True
+        else:
+            return False
+
+    fbot = FakeBot("../work/bot1/config.yml")
+    res = fbot.test_strategy(calc_ind, buy_sig, sell_sig, last_n_days=10)
+    plot_balance(res)
