@@ -6,7 +6,6 @@ reqs = [
     "pandas",
     "boto3==1.20.5",
     "grpcio==1.41.0",
-    "mariadb==1.0.8",
     "pandas==1.3.4",
     "pika==1.2.0",
     "protobuf==3.19.1",
@@ -15,8 +14,6 @@ reqs = [
     "PyYAML==6.0",
     "requests==2.25.1",
     "setuptools==49.2.1",
-    "TA_Lib==0.4.21",
-    "technical==1.3.0",
     "tenacity==8.0.1"
 ]
 setuptools.setup(
