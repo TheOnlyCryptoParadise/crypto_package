@@ -3,7 +3,18 @@ from pip._internal.req import parse_requirements
 reqs = [
     "requests~=2.25.1",
     "setuptools~=49.2.1",
-    "pandas"
+    "pandas",
+    "boto3==1.20.5",
+    "grpcio==1.41.0",
+    "pandas==1.3.4",
+    "pika==1.2.0",
+    "protobuf==3.19.1",
+    "pydantic==1.8.2",
+    "python-dotenv==0.19.2",
+    "PyYAML==6.0",
+    "requests==2.25.1",
+    "setuptools==49.2.1",
+    "tenacity==8.0.1"
 ]
 setuptools.setup(
     name="crypto_package",
