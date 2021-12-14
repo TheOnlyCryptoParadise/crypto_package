@@ -77,13 +77,22 @@ def plot_profit(res: AnalysisResult, pair=None): #time in seconds
 
     for trade_id in range(start, end):
         trade = transactions[trade_id]
-        results = tr_buy_amount.get(trade.amount) if trade.amount in tr_buy_amount else []
+        results = []
+        if trade.amount in tr_buy_amount.keys():
+            results = tr_buy_amount.get(trade.amount)
 
         if trade.is_buy:
-            tr_buy_amount.update({trade.amount: results.append(trade)})
+            if len(results)==0:
+                results = [trade]
+            else: results.append(trade)
+            tr_buy_amount.update({trade.amount: results})
         else:
             oldest_buy = results.pop(0)
-            tr_buy_amount.update({trade.amount: results})
+            if len(results) > 0:
+                tr_buy_amount.update({trade.amount: results})
+            else:
+                tr_buy_amount.pop(trade.amount)
+
             profit = ((trade.amount*trade.price) - (trade.amount*oldest_buy.price))/(trade.amount*oldest_buy.price)
 
             y_v.append(profit)
@@ -103,3 +112,4 @@ def plot_profit(res: AnalysisResult, pair=None): #time in seconds
 
     plt.plot(x_v, y_v)
     plt.show()
+
