@@ -7,7 +7,7 @@ from random import randint
 import yaml
 
 import crypto_package
-from analyze_functions import plot_profit, plot_pairs_profit, plot_block_profit
+from .analyze_functions import plot_profit, plot_pairs_profit, plot_block_profit
 from crypto_package.fake_bot.models import Trade, AnalysisResult
 
 
