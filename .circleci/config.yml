@@ -27,5 +27,14 @@ jobs:
       - run:
           name: build
           command: python -m build
+      - run: # FIXME
+          name: rename
+          command: mv crypto_package-0.0.1-py3-none-any.whl crypto_package_fake_bot-0.0.1-py3-none-any.whl
+      - run:
+          name: delete fake_bot #FIXME
+          command: rm -r crypto_package/fake_bot
+      - run:
+          name: build #FIXME
+          command: python -m build
       - store_artifacts:
           path: dist/
