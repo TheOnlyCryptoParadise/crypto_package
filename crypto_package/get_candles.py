@@ -1,8 +1,10 @@
 from datetime import datetime
-from crypto_package.conf import service_config as conf
-import requests
 from time import time
+
 import pandas
+import requests
+
+from crypto_package.conf import service_config as conf
 
 
 def get_candles(exchange: str, currency_pair: str, ticker: str, time_start=None, time_end=None, last_n_candles=None):
@@ -36,6 +38,7 @@ def get_candles(exchange: str, currency_pair: str, ticker: str, time_start=None,
 
     if res.status_code != 200:
         print("Some exception occurred while connecting to server."+str(res))
+        print(args)
         return None
 
     clist = res.json()['data']
@@ -63,8 +66,8 @@ def _add_time_values(args, time_start, time_end):
         if time_end is not None and type(time_end) is not datetime:
             raise TypeError("time_start has to be datetime")
 
-        args["time_start"] = time_start.timestamp()
-        args["time_end"] = _check_time(time_start, time_end) if time_end is not None else time()
+        args["time_start"] = int(time_start.timestamp())
+        args["time_end"] = int(_check_time(time_start, time_end)) if time_end is not None else int(time())
 
     elif time_start is None and time_end is not None:
         raise ValueError("you cannot pass time_end without time_start")

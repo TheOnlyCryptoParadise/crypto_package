@@ -1,16 +1,18 @@
 import logging
-from random import random, randint
+from datetime import datetime, timedelta
+from random import randint
 
-import crypto_package
-from datetime import date, datetime, timedelta
 # from pprint import pprint
 # from numpy import double
 import yaml
-import talib.abstract as ta
-import pydantic
 
-from .analyze_functions import plot_balance
+import crypto_package
+from analyze_functions import plot_profit, plot_pairs_profit, plot_block_profit
 from crypto_package.fake_bot.models import Trade, AnalysisResult
+
+
+# import talib.abstract as ta
+
 
 def candle_size_to_seconds(cs):
     num = int(cs[:-1])
@@ -82,8 +84,11 @@ class FakeBot():
             if self.config['sell_all']:
                 for btrade in self._open_trades[currency_pair]:
                     self._sell_open_trade(btrade, df.iloc[-1]['close'], timestamp=datetime.fromtimestamp(df.iloc[-1]['time']))
-            else:
-                raise NotImplementedError()
+            elif len(self._open_trades[currency_pair])>0:
+                buy_trade = self._open_trades[currency_pair][0]
+                self._sell_open_trade(buy_trade, df.iloc[-1]['close'],
+                                      timestamp=datetime.fromtimestamp(df.iloc[-1]['time']))
+
 
     def _try_buy(self, trade):
         if self._current_balance >= trade.amount*trade.price:
@@ -110,26 +115,31 @@ class FakeBot():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    def calc_ind(dataframe):
-        # dataframe['rsi'] = ta.RSI(dataframe, timeperiod=14)
-        return dataframe
+    # def calc_ind(dataframe):
+    #     # dataframe['rsi'] = ta.RSI(dataframe, timeperiod=14)
+    #     return dataframe
+    #
+    # def buy_sig(dataframe):
+    #     r = randint(0,10)
+    #     if r>8:
+    #     # if dataframe.iloc[-1]['rsi'] > 70:
+    #         return True
+    #     else:
+    #         return False
+    #
+    # def sell_sig(dataframe):
+    #     # if dataframe.iloc[-1]['rsi'] < 30:
+    #     r = randint(0, 10)
+    #     if r > 1:
+    #         return True
+    #     else:
+    #         return False
+    #
+    # # fbot = FakeBot("../work/bot1/config.yml")
+    # fbot = FakeBot("C:/Users/natalia/Desktop/studia/inzynierka/backend/bot/bot_app/user_files/1023/4/config.yml")
+    # res = fbot.test_strategy(calc_ind, buy_sig, sell_sig, last_n_days=1)
+    # # plot_balance(res)
+    # plot_profit(res)
+    # plot_pairs_profit(res,fbot.config["currency_pairs"] )
+    # plot_block_profit(res, hours=1)
 
-    def buy_sig(dataframe):
-        # r = randint(0,10)
-        # if r>5:
-        if dataframe.iloc[-1]['rsi'] > 70:
-            return True
-        else:
-            return False
-
-    def sell_sig(dataframe):
-        if dataframe.iloc[-1]['rsi'] < 30:
-        # r = randint(0, 10)
-        # if r > 5:
-            return True
-        else:
-            return False
-
-    fbot = FakeBot("../work/bot1/config.yml")
-    res = fbot.test_strategy(calc_ind, buy_sig, sell_sig, last_n_days=10)
-    plot_balance(res)

@@ -1,7 +1,8 @@
 import pandas
+import requests
 
 from crypto_package.conf import service_config as conf
-import requests
+
 
 def get_live_price(exchange: str, currency_pairs: [str]):
     """Gets prices of defined currencies.
