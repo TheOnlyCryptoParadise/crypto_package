@@ -3,10 +3,11 @@ from typing import List
 
 import pandas as pd
 import matplotlib.pyplot as plt
-from models import AnalysisResult
+from .models import AnalysisResult
 
 
 def generate_balance(res: AnalysisResult):
+
     x_v = [ t.timestamp for t in res.trades]
     x_v.insert(0, res.start_datetime)
     y_v = [res.start_balance]
@@ -17,6 +18,7 @@ def generate_balance(res: AnalysisResult):
         else:
             balance += t.price * t.amount
         y_v.append(balance)
+
     return x_v, y_v
 
 def plot_balance(res: AnalysisResult):
@@ -216,3 +218,4 @@ def plot_pairs_profit(res: AnalysisResult, pairs:List, seconds=0, minutes=0, hou
     plt.title("Profit for each pair")
     plt.show()
     # plt.savefig("profit_graph.png")
+

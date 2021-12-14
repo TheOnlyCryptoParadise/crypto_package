@@ -13,6 +13,7 @@ from crypto_package.fake_bot.models import Trade, AnalysisResult
 
 # import talib.abstract as ta
 
+
 def candle_size_to_seconds(cs):
     num = int(cs[:-1])
     s = cs[-1]
@@ -88,6 +89,7 @@ class FakeBot():
                 self._sell_open_trade(buy_trade, df.iloc[-1]['close'],
                                       timestamp=datetime.fromtimestamp(df.iloc[-1]['time']))
 
+
     def _try_buy(self, trade):
         if self._current_balance >= trade.amount*trade.price:
             self._logger.debug(f"bought {trade.pair} price:{trade.price} amount:{trade.amount} value:{trade.amount*trade.price}")
@@ -140,3 +142,4 @@ if __name__ == "__main__":
     # plot_profit(res)
     # plot_pairs_profit(res,fbot.config["currency_pairs"] )
     # plot_block_profit(res, hours=1)
+
