@@ -9,7 +9,7 @@ import yaml
 import talib.abstract as ta
 import pydantic
 
-from analyze_functions import plot_balance
+from .analyze_functions import plot_balance
 from crypto_package.fake_bot.models import Trade, AnalysisResult
 
 def candle_size_to_seconds(cs):

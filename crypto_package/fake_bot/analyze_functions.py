@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 import matplotlib.pyplot as plt
-from models import Trade, AnalysisResult
+from .models import Trade, AnalysisResult
 import matplotlib.dates as mdates
 
 def plot_balance(res: AnalysisResult):
@@ -33,47 +33,47 @@ def plot_balance(res: AnalysisResult):
     plt.show()
 
 
-def plot_profit(res: AnalysisResult, time_period=60, pair=None): #time in seconds
-    t = res.start_datetime
-    x_v=[]
+# def plot_profit(res: AnalysisResult, time_period=60, pair=None): #time in seconds
+#     t = res.start_datetime
+#     x_v=[]
 
-    while t != res.end_datetime:
-        x_v.append(t)
-        t = t + timedelta(seconds=time_period)
+#     while t != res.end_datetime:
+#         x_v.append(t)
+#         t = t + timedelta(seconds=time_period)
 
-    x_v.append(t)
-    print(x_v)
+#     x_v.append(t)
+#     print(x_v)
 
-    transactions = res.trades
-    if pair is not None:
-        transactions = [tr for tr in res.trades if tr.pair==pair]
+#     transactions = res.trades
+#     if pair is not None:
+#         transactions = [tr for tr in res.trades if tr.pair==pair]
 
-    over_profit = 0
-    for i in range(1,len(x_v)):
-        start = x_v[i-1]
-        end = x_v[i]
-        for j in range(0, len(transactions)):
-            if start <= transactions[i].timestamp < end and not transactions[i].is_buy:
-
-
-
-        sell_trades = [tr for tr in transactions if start <= tr.timestamp < end and not tr.is_buy]
-        for trade in sell_trades:
+#     over_profit = 0
+#     for i in range(1,len(x_v)):
+#         start = x_v[i-1]
+#         end = x_v[i]
+#         for j in range(0, len(transactions)):
+#             if start <= transactions[i].timestamp < end and not transactions[i].is_buy:
 
 
 
-    y_v = [res.start_balance]
+#         sell_trades = [tr for tr in transactions if start <= tr.timestamp < end and not tr.is_buy]
+#         for trade in sell_trades:
 
 
-    ax = plt.gca()
-    formatter = mdates.DateFormatter("%Y-%m-%d")
-    ax.xaxis.set_major_formatter(formatter)
 
-    locator = mdates.DayLocator()
+#     y_v = [res.start_balance]
 
-    # set locator
 
-    ax.xaxis.set_major_locator(locator)
+#     ax = plt.gca()
+#     formatter = mdates.DateFormatter("%Y-%m-%d")
+#     ax.xaxis.set_major_formatter(formatter)
 
-    plt.plot(x_v, y_v)
-    plt.show()
+#     locator = mdates.DayLocator()
+
+#     # set locator
+
+#     ax.xaxis.set_major_locator(locator)
+
+#     plt.plot(x_v, y_v)
+#     plt.show()
