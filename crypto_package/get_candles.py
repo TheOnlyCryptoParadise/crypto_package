@@ -1,8 +1,10 @@
 from datetime import datetime
-from crypto_package.conf import service_config as conf
-import requests
 from time import time
+
 import pandas
+import requests
+
+from crypto_package.conf import service_config as conf
 
 
 def get_candles(exchange: str, currency_pair: str, ticker: str, time_start=None, time_end=None, last_n_candles=None):

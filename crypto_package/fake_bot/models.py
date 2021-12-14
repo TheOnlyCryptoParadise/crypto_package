@@ -1,8 +1,10 @@
-from typing import List
-import pydantic
 from datetime import datetime
+from typing import List
 
+import pydantic
 from pydantic.main import BaseModel
+
+
 class Trade(pydantic.BaseModel):
     pair: str
     is_buy: bool
