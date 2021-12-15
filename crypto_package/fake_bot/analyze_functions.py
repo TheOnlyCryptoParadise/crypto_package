@@ -108,7 +108,7 @@ def generate_block_profit(res:AnalysisResult, seconds=60, minutes=0, hours=0,  p
         t = t + timedelta(hours=hours, minutes=minutes, seconds=seconds)
 
     # x_v.append(t)
-    print(x_v)
+    #print(x_v)
 
     transactions = res.trades
     if pair is not None:
@@ -185,8 +185,8 @@ def plot_profit(res: AnalysisResult, pair=None): #time in seconds
 def plot_block_profit(res: AnalysisResult, seconds=0, minutes=0, hours=0,  pair=None): #time in seconds
     (x_v, y_v) = generate_block_profit(res, seconds, minutes, hours, pair)
 
-    print(x_v)
-    print(y_v)
+    #print(x_v)
+    #print(y_v)
     # idx = pd.to_datetime(x_v)
     idx = pd.Series(x_v)
     df = pd.Series(y_v, index=idx)
@@ -205,14 +205,14 @@ def plot_pairs_profit(res: AnalysisResult, pairs:List, seconds=0, minutes=0, hou
         idx = pd.to_datetime(x_v)
         data[pair] = y_v
 
-    print(data)
+    #print(data)
 
     # print(idx)
     # df = pd.Series(y_v, index=idx,label=pair)
     df = pd.DataFrame(data=data, index=idx)
-    print(df)
-    df.plot(label=pair)
-    plt.plot(idx, y_v, label=str(pair))
+    #print(df)
+    df.plot()
+    #plt.plot(idx, y_v, label=str(pair))
 
     # ax.legend(loc='best')
     plt.title("Profit for each pair")
