@@ -7,8 +7,9 @@ from random import randint
 import yaml
 
 import crypto_package
-from .analyze_functions import plot_profit, plot_pairs_profit, plot_block_profit
-from crypto_package.fake_bot.models import Trade, AnalysisResult
+# from .analyze_functions import plot_profit, plot_pairs_profit, plot_block_profit
+# from crypto_package.backtesting import plot_profit
+from crypto_package.backtesting.models import Trade, AnalysisResult
 
 
 # import talib.abstract as ta
@@ -29,7 +30,7 @@ def candle_size_to_seconds(cs):
         return num * 3600 * 24 * 30
 
 
-class FakeBot():
+class BacktestingBot():
     def __init__(self, config_path):
         self._logger = logging.getLogger(__name__)
         # self._logger.setLevel(logging.DEBUG)
@@ -54,7 +55,7 @@ class FakeBot():
         else:
             raise ValueError("You need to provide at least time_start or last_n_days")
 
-        time_start = time_start - timedelta(seconds=self.config['last_n_candles']*candle_size_to_seconds(self.config['ticker']))
+        time_start = time_start - timedelta(seconds=self.config['last_n_candles']*candle_size_to_seconds(self.config['ticker'])) # TODO check
 
         all_candles = {}
         for pair in self.config['currency_pairs']:
@@ -63,10 +64,11 @@ class FakeBot():
         self._logger.debug(f"download necessary candles: " + str({k: v.shape for k, v in all_candles.items()}))
         no_candles = all_candles[self.config['currency_pairs'][0]].shape[0]
 
-        for i in range(100, no_candles):
+        for i in range(self.config['last_n_candles'], no_candles):
 
             for k, v in all_candles.items():
-                candles_portion = v.iloc[0:i]
+                candles_portion = v.iloc[self.config['last_n_candles']-i:i]
+                self._logger.debug("Candles range: "+str(self.config['last_n_candles']-i)+ " to "+ str(i)) #TODO check
                 self._process_candles(calc_ind_f, buy_sig_f, sell_sig_f, k, candles_portion)
         return AnalysisResult(trades=self._all_trades, start_balance=self._start_balance, end_balance=self._current_balance, start_datetime=time_start, end_datetime=time_end)
         # return {"trades": self._all_trades, "balance": self._current_balance, "start_balance": self._start_balance}
@@ -77,8 +79,9 @@ class FakeBot():
         indicators = calc_ind_f(df)
         if buy_sig_f(indicators):
             amount = self.config['transaction_amount'] / df.iloc[-1]['close']
-            trade = Trade(is_buy=True, pair=currency_pair, amount=amount, price=df.iloc[-1]['close'], timestamp=datetime.fromtimestamp(df.iloc[-1]['time']))
-            self._try_buy(trade)
+            if self.config['max_open_trades'] > len(self._open_trades):
+                trade = Trade(is_buy=True, pair=currency_pair, amount=amount, price=df.iloc[-1]['close'], timestamp=datetime.fromtimestamp(df.iloc[-1]['time']))
+                self._try_buy(trade)
 
         if sell_sig_f(indicators):
             if self.config['sell_all']:
@@ -136,7 +139,7 @@ if __name__ == "__main__":
     #         return False
     #
     # # fbot = FakeBot("../work/bot1/config.yml")
-    # fbot = FakeBot("C:/Users/natalia/Desktop/studia/inzynierka/backend/bot/bot_app/user_files/1023/4/config.yml")
+    # fbot = BacktestingBot("C:/Users/natalia/Desktop/studia/inzynierka/backend/bot/bot_app/user_files/1023/4/config.yml")
     # res = fbot.test_strategy(calc_ind, buy_sig, sell_sig, last_n_days=1)
     # # plot_balance(res)
     # plot_profit(res)
