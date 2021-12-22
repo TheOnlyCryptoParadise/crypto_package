@@ -7,8 +7,8 @@ from random import randint
 import yaml
 
 import crypto_package
-from .analyze_functions import plot_profit, plot_pairs_profit, plot_block_profit
-from crypto_package.fake_bot.models import Trade, AnalysisResult
+# from .analyze_functions import plot_profit, plot_pairs_profit, plot_block_profit
+from crypto_package.backtesting.models import Trade, AnalysisResult
 
 
 # import talib.abstract as ta
@@ -29,7 +29,7 @@ def candle_size_to_seconds(cs):
         return num * 3600 * 24 * 30
 
 
-class FakeBot():
+class BacktestingBot():
     def __init__(self, config_path):
         self._logger = logging.getLogger(__name__)
         # self._logger.setLevel(logging.DEBUG)

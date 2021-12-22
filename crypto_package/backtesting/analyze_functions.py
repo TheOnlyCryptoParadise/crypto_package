@@ -1,9 +1,8 @@
-from datetime import timedelta, datetime
+from datetime import datetime
 from typing import List
 
-import pandas as pd
-import matplotlib.pyplot as plt
-from crypto_package.get_candles import get_candles
+
+from crypto_package.candles.get_candles import get_candles
 from pandas import DataFrame, to_datetime
 import plotly.graph_objects as go
 from models import AnalysisResult, Trade
@@ -37,10 +36,10 @@ def plot_candles(candles: DataFrame, trades: AnalysisResult = None, pair=None, w
         low=candles['low'],
         close=candles['close']))
 
-    if trades != None:
+    if trades is not None:
         res = trades.trades
 
-        if pair != None:
+        if pair is not None:
             res = [t for t in trades.trades if t.pair == pair]
 
         buy_trades_price = [tr.price for tr in res if tr.is_buy]
@@ -118,6 +117,8 @@ def calculate_profit_from_trades(transactions: List[Trade], start_datetime, end_
     start = 0
     end = len(transactions)
     profit = 0
+    sell_costs = 0
+    buy_costs = 0
 
     x_v = [start_datetime]
     y_v = [profit]
@@ -141,8 +142,11 @@ def calculate_profit_from_trades(transactions: List[Trade], start_datetime, end_
             else:
                 tr_buy_amount.pop(trade.amount)
 
-            profit = ((trade.amount * trade.price) - (trade.amount * oldest_buy.price)) / (
-                    trade.amount * oldest_buy.price)
+            sell_costs += trade.amount * trade.price
+            buy_costs += trade.amount * oldest_buy.price
+            profit = (sell_costs - buy_costs) / buy_costs
+            # profit = ((trade.amount * trade.price) - (trade.amount * oldest_buy.price)) / (
+            #             trade.amount * oldest_buy.price)
 
             y_v.append(profit)
             x_v.append(trade.timestamp)
@@ -177,7 +181,7 @@ def plot_profit(trades: AnalysisResult, width: int = 1000, height: int = 650):
 def plot_profit_per_pair(trades: AnalysisResult, pairs: List[str] = None, width: int = 1000, height: int = 650):
     pair_trades = {}
 
-    if pairs == None:
+    if pairs is None:
         for trade in trades.trades:
             uptrades = pair_trades.get(trade.pair) if trade.pair in pair_trades.keys() else []
             uptrades.append(trade)
