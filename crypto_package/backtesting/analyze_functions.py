@@ -5,7 +5,7 @@ from typing import List
 from crypto_package.candles.get_candles import get_candles
 from pandas import DataFrame, to_datetime
 import plotly.graph_objects as go
-from models import AnalysisResult, Trade
+from .models import AnalysisResult, Trade
 
 
 def get_candles_and_plot(exchange: str, pair: str, candle_size: str, time_start: datetime = None,
