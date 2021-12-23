@@ -1,4 +1,5 @@
 from datetime import datetime
+from random import randint
 from typing import List
 
 
@@ -109,6 +110,44 @@ def plot_indicators(indicators_df: DataFrame, indicators: List[str], width: int 
             height=height
         )
         fig.show()
+
+def plot_indicators_on_candles(indicators_df: DataFrame, indicators: List[str], width: int = 1000,
+                    height: int = 650):  # indicators_df contains columns with indicators and column "date" with datetime
+    if "time" in indicators_df.columns:
+        indicators_df = indicators_df.rename(columns={"time": "date"})
+    if type(indicators_df["date"][0]) is not datetime:
+        indicators_df["date"] = to_datetime(indicators_df["date"], unit='s')
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Candlestick(
+        x=indicators_df['date'],
+        open=indicators_df['open'],
+        high=indicators_df['high'],
+        low=indicators_df['low'],
+        close=indicators_df['close']))
+
+    for ind in indicators:
+        fig.add_trace(go.Scatter(
+            x=indicators_df['date'],
+            y=indicators_df[ind],
+            mode='markers',
+            marker=dict(
+                color=randint(1,500),
+                line_width=2,
+                size=7,
+            ),
+            name=ind,
+        ))
+    fig.update_layout(
+        title="Indicators on candles",
+        xaxis_title="time",
+        yaxis_title="value",
+        width=width,
+        height=height
+    )
+    fig.show()
+
 
 
 def calculate_profit_from_trades(transactions: List[Trade], start_datetime, end_datetime):
