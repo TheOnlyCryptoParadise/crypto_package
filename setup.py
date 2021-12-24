@@ -14,7 +14,8 @@ reqs = [
     "PyYAML==6.0",
     "requests==2.25.1",
     "setuptools==49.2.1",
-    "tenacity==8.0.1"
+    "tenacity==8.0.1",
+    "plotly==5.4.0"
 ]
 setuptools.setup(
     name="crypto_package",
