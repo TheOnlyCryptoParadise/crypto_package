@@ -88,7 +88,7 @@ def plot_candles(candles: DataFrame, trades: AnalysisResult = None, pair=None, w
     # return fig
 
 def plot_indicators(indicators_df: DataFrame, indicators: List[str], width: int = 1000,
-                    height: int = 650):  # indicators_df contains columns with indicators and column "date" with datetime
+                    height: int = 650, fig_type:str='lines'):  # indicators_df contains columns with indicators and column "date" with datetime
     if "time" in indicators_df.columns:
         indicators_df = indicators_df.rename(columns={"time": "date"})
     if type(indicators_df["date"][0]) is not datetime:
@@ -99,7 +99,7 @@ def plot_indicators(indicators_df: DataFrame, indicators: List[str], width: int 
         fig.add_trace(go.Scatter(
             x=indicators_df['date'],
             y=indicators_df[ind],
-            mode='lines',
+            mode=fig_type,
             name=ind,
         ))
         fig.update_layout(

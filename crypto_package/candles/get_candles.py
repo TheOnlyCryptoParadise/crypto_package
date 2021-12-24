@@ -34,12 +34,11 @@ def get_candles(exchange: str, currency_pair: str, ticker: str, time_start=None,
         res = requests.get(conf.CANDLE_DATA_SERVICE + conf.EP_CANDLES, args)
     except requests.ConnectionError as e:
         print("CONNECTION ERROR OCCURRED "+str(e))
-        return None
+        raise e
 
     if res.status_code != 200:
         print("Some exception occurred while connecting to server."+str(res))
-        print(args)
-        return None
+        raise Exception(str(res) + " "+str(res.reason))
 
     clist = res.json()['data']
     candles = pandas.DataFrame(clist)

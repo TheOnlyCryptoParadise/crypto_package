@@ -33,7 +33,7 @@ def candle_size_to_seconds(cs):
 class BacktestingBot():
     def __init__(self, config_path):
         self._logger = logging.getLogger(__name__)
-        # self._logger.setLevel(logging.DEBUG)
+        self._logger.setLevel(logging.DEBUG)
         self._logger.info("starting")
         with open(config_path, "r") as f:
             self.config = yaml.safe_load(f.read())
@@ -65,19 +65,20 @@ class BacktestingBot():
         no_candles = all_candles[self.config['currency_pairs'][0]].shape[0]
 
         for i in range(self.config['last_n_candles'], no_candles):
-
-            for k, v in all_candles.items():
-                candles_portion = v.iloc[self.config['last_n_candles']-i:i]
-                self._logger.debug("Candles range: "+str(self.config['last_n_candles']-i)+ " to "+ str(i)) #TODO check
-                self._process_candles(calc_ind_f, buy_sig_f, sell_sig_f, k, candles_portion)
+            if i-self.config['last_n_candles'] >= 0:
+                for k, v in all_candles.items():
+                    candles_portion = v.iloc[i-self.config['last_n_candles']:i]
+                    self._logger.debug("Candles range: "+str(i-self.config['last_n_candles'])+ " to "+ str(i)) #TODO check
+                    self._process_candles(calc_ind_f, buy_sig_f, sell_sig_f, k, candles_portion)
         return AnalysisResult(trades=self._all_trades, start_balance=self._start_balance, end_balance=self._current_balance, start_datetime=time_start, end_datetime=time_end)
         # return {"trades": self._all_trades, "balance": self._current_balance, "start_balance": self._start_balance}
 
 
     def _process_candles(self, calc_ind_f, buy_sig_f, sell_sig_f, currency_pair, df):
-
+        self._logger.debug(df)
         indicators = calc_ind_f(df)
         if buy_sig_f(indicators):
+
             amount = self.config['transaction_amount'] / df.iloc[-1]['close']
             if self.config['max_open_trades'] > len(self._open_trades):
                 trade = Trade(is_buy=True, pair=currency_pair, amount=amount, price=df.iloc[-1]['close'], timestamp=datetime.fromtimestamp(df.iloc[-1]['time']))
@@ -118,29 +119,29 @@ class BacktestingBot():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    # def calc_ind(dataframe):
-    #     # dataframe['rsi'] = ta.RSI(dataframe, timeperiod=14)
-    #     return dataframe
-    #
-    # def buy_sig(dataframe):
-    #     r = randint(0,10)
-    #     if r>8:
-    #     # if dataframe.iloc[-1]['rsi'] > 70:
-    #         return True
-    #     else:
-    #         return False
-    #
-    # def sell_sig(dataframe):
-    #     # if dataframe.iloc[-1]['rsi'] < 30:
-    #     r = randint(0, 10)
-    #     if r > 1:
-    #         return True
-    #     else:
-    #         return False
-    #
-    # # fbot = FakeBot("../work/bot1/config.yml")
-    # fbot = BacktestingBot("C:/Users/natalia/Desktop/studia/inzynierka/backend/bot/bot_app/user_files/1023/4/config.yml")
-    # res = fbot.test_strategy(calc_ind, buy_sig, sell_sig, last_n_days=1)
+    def calc_ind(dataframe):
+        # dataframe['rsi'] = ta.RSI(dataframe, timeperiod=14)
+        return dataframe
+
+    def buy_sig(dataframe):
+        r = randint(0,10)
+        if r>8:
+        # if dataframe.iloc[-1]['rsi'] > 70:
+            return True
+        else:
+            return False
+
+    def sell_sig(dataframe):
+        # if dataframe.iloc[-1]['rsi'] < 30:
+        r = randint(0, 10)
+        if r > 1:
+            return True
+        else:
+            return False
+
+    # fbot = FakeBot("../work/bot1/config.yml")
+    fbot = BacktestingBot("C:/Users/natalia/Desktop/studia/inzynierka/backend/bot/bot_app/user_files/example_config.yml")
+    res = fbot.test_strategy(calc_ind, buy_sig, sell_sig, last_n_days=3)
     # # plot_balance(res)
     # plot_profit(res)
     # plot_pairs_profit(res,fbot.config["currency_pairs"] )

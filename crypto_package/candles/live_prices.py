@@ -22,12 +22,12 @@ def get_live_price(exchange: str, currency_pairs: [str]):
         res = requests.post(conf.CANDLE_DATA_SERVICE + conf.EP_LIVE_PRICES, json=args)
     except requests.ConnectionError as e:
         print("CONNECTION ERROR OCCURRED "+str(e))
-        return None, None
+        raise e
 
 
     if res.status_code != 200:
         print("Some exception occurred while connecting to server."+str(res))
-        return None, None
+        raise Exception(str(res)+ " "+str(res.reason))
 
     res = res.json()['data'][0]['data']
     pandas_res = pandas.DataFrame(res).T
