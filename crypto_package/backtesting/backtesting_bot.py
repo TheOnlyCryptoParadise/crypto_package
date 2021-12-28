@@ -43,6 +43,8 @@ class BacktestingBot():
         self._start_balance = start_balance
         self._open_trades = {p:[] for p in self.config['currency_pairs']}
         self._all_trades = []
+        self._buy_signals = []
+        self._sell_signals = []
 
     def test_strategy(self, calc_ind_f, buy_sig_f, sell_sig_f, start_balance=1000, time_start=None, time_end=None, last_n_days=None):
         self._reset_state(start_balance)
@@ -51,15 +53,18 @@ class BacktestingBot():
             time_start = time_end - timedelta(days=last_n_days)
         elif not time_end and time_start:
             time_end = datetime.now()
-            time_start = datetime.fromisoformat(time_start)
+            if type(time_start) is str:
+                time_start = datetime.fromisoformat(time_start)
+            elif type(time_start) is not datetime:
+                raise ValueError("time_start has to be a sting or a datetime")
         else:
             raise ValueError("You need to provide at least time_start or last_n_days")
 
-        time_start = time_start - timedelta(seconds=self.config['last_n_candles']*candle_size_to_seconds(self.config['ticker'])) # TODO check
+        time_start = time_start - timedelta(seconds=self.config['last_n_candles']*candle_size_to_seconds(self.config['timeframe'])) # TODO check
 
         all_candles = {}
         for pair in self.config['currency_pairs']:
-            all_candles[pair] = crypto_package.get_candles(self.config['exchange'], pair, self.config['ticker'], time_start, time_end)[0]
+            all_candles[pair] = crypto_package.get_candles(self.config['exchange'], pair, self.config['timeframe'], time_start, time_end)[0]
 
         self._logger.debug(f"download necessary candles: " + str({k: v.shape for k, v in all_candles.items()}))
         no_candles = all_candles[self.config['currency_pairs'][0]].shape[0]
@@ -70,7 +75,8 @@ class BacktestingBot():
                     candles_portion = v.iloc[i-self.config['last_n_candles']:i]
                     self._logger.debug("Candles range: "+str(i-self.config['last_n_candles'])+ " to "+ str(i)) #TODO check
                     self._process_candles(calc_ind_f, buy_sig_f, sell_sig_f, k, candles_portion)
-        return AnalysisResult(trades=self._all_trades, start_balance=self._start_balance, end_balance=self._current_balance, start_datetime=time_start, end_datetime=time_end)
+        return AnalysisResult(trades=self._all_trades, start_balance=self._start_balance, end_balance=self._current_balance, start_datetime=time_start, end_datetime=time_end,
+                              sell_signals=self._sell_signals, buy_signals = self._buy_signals)
         # return {"trades": self._all_trades, "balance": self._current_balance, "start_balance": self._start_balance}
 
 
@@ -78,6 +84,7 @@ class BacktestingBot():
         self._logger.debug(df)
         indicators = calc_ind_f(df)
         if buy_sig_f(indicators):
+            self._buy_signals.append((df.iloc[-1]['close'], datetime.fromtimestamp(df.iloc[-1]['time'])))
 
             amount = self.config['transaction_amount'] / df.iloc[-1]['close']
             if self.config['max_open_trades'] > len(self._open_trades):
@@ -85,6 +92,7 @@ class BacktestingBot():
                 self._try_buy(trade)
 
         if sell_sig_f(indicators):
+            self._sell_signals.append((df.iloc[-1]['close'], datetime.fromtimestamp(df.iloc[-1]['time'])))
             if self.config['sell_all']:
                 for btrade in self._open_trades[currency_pair]:
                     self._sell_open_trade(btrade, df.iloc[-1]['close'], timestamp=datetime.fromtimestamp(df.iloc[-1]['time']))

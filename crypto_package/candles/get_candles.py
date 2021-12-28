@@ -7,7 +7,7 @@ import requests
 from crypto_package.conf import service_config as conf
 
 
-def get_candles(exchange: str, currency_pair: str, ticker: str, time_start=None, time_end=None, last_n_candles=None):
+def get_candles(exchange: str, currency_pair: str, timeframe: str, time_start=None, time_end=None, last_n_candles=None):
     """Gets required candles.
 
         Parameters:
@@ -15,8 +15,8 @@ def get_candles(exchange: str, currency_pair: str, ticker: str, time_start=None,
                 exchange name (Binance, Bitbay)
             currency_pair : str
                 string performing name of the pair (eg. UDT/STH)
-            ticker : str
-                i dont know but maybe you knows ;)
+            timeframe : str
+                size of candle
             time_start: datetime [OPTIONAL]
                 from what time you want to get candles (time is a timestamp)
             time_end: datetime [OPTIONAL]
@@ -29,7 +29,7 @@ def get_candles(exchange: str, currency_pair: str, ticker: str, time_start=None,
             pandas DataFrame with candles data
     """
 
-    args = _make_get_candles_args(exchange, currency_pair, ticker, time_start, time_end, last_n_candles)
+    args = _make_get_candles_args(exchange, currency_pair, timeframe, time_start, time_end, last_n_candles)
     try:
         res = requests.get(conf.CANDLE_DATA_SERVICE + conf.EP_CANDLES, args)
     except requests.ConnectionError as e:

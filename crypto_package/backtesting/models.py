@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Tuple
 
 import pydantic
 from pydantic.main import BaseModel
@@ -18,3 +18,5 @@ class AnalysisResult(BaseModel):
     end_balance: float
     start_datetime: datetime
     end_datetime: datetime
+    sell_signals: List[Tuple[float, datetime]]
+    buy_signals: List[Tuple[float, datetime]]
