@@ -187,11 +187,11 @@ def calculate_profit_from_trades(transactions: List[Trade], start_datetime, end_
             # profit = ((trade.amount * trade.price) - (trade.amount * oldest_buy.price)) / (
             #             trade.amount * oldest_buy.price)
 
-            y_v.append(profit)
+            y_v.append(profit*100)
             x_v.append(trade.timestamp)
 
     x_v.append(end_datetime)
-    y_v.append(profit)
+    y_v.append(profit*100)
 
     return x_v, y_v
 

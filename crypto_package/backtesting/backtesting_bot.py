@@ -70,11 +70,10 @@ class BacktestingBot():
         no_candles = all_candles[self.config['currency_pairs'][0]].shape[0]
 
         for i in range(self.config['last_n_candles'], no_candles):
-            if i-self.config['last_n_candles'] >= 0:
-                for k, v in all_candles.items():
-                    candles_portion = v.iloc[i-self.config['last_n_candles']:i]
-                    self._logger.debug("Candles range: "+str(i-self.config['last_n_candles'])+ " to "+ str(i)) #TODO check
-                    self._process_candles(calc_ind_f, buy_sig_f, sell_sig_f, k, candles_portion)
+            for k, v in all_candles.items():
+                candles_portion = v.iloc[0:i]
+                self._logger.debug("Candles range: "+str(i-self.config['last_n_candles'])+ " to "+ str(i)) #TODO check
+                self._process_candles(calc_ind_f, buy_sig_f, sell_sig_f, k, candles_portion)
         return AnalysisResult(trades=self._all_trades, start_balance=self._start_balance, end_balance=self._current_balance, start_datetime=time_start, end_datetime=time_end,
                               sell_signals=self._sell_signals, buy_signals = self._buy_signals)
         # return {"trades": self._all_trades, "balance": self._current_balance, "start_balance": self._start_balance}
@@ -126,30 +125,82 @@ class BacktestingBot():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    def calc_ind(dataframe):
-        # dataframe['rsi'] = ta.RSI(dataframe, timeperiod=14)
-        return dataframe
+    logging.basicConfig(level=logging.DEBUG)
 
-    def buy_sig(dataframe):
-        r = randint(0,10)
-        if r>8:
-        # if dataframe.iloc[-1]['rsi'] > 70:
-            return True
-        else:
-            return False
+    #
+    # def calc_indicators_patterns_1(candles):
+    #     candles['eng'] = ta.CDLENGULFING(candles)
+    #     candles['hammer'] = ta.CDLHAMMER(candles)
+    #     candles['invhammer'] = ta.CDLINVERTEDHAMMER(candles)
+    #     candles['morning'] = ta.CDLMORNINGSTAR(candles)
+    #
+    #     candles['hang'] = ta.CDLHANGINGMAN(candles)
+    #     candles['shoot'] = ta.CDLSHOOTINGSTAR(candles)
+    #     candles['evening'] = ta.CDLEVENINGSTAR(candles)
+    #
+    #     return candles
+    #
+    #
+    # def check_buy_signals_patterns_1(indicators):
+    #     buy = False
+    #
+    #     if indicators.iloc[-2]['eng'] == 100 and indicators.iloc[-1]['eng'] == 100:
+    #         buy = True
+    #     elif (indicators.iloc[-1]['hammer'] == 100 and
+    #           indicators.iloc[-1]['open'] < indicators.iloc[-1]['close'] and  # zielona
+    #           indicators.iloc[-2]['open'] > indicators.iloc[-2]['close'] and  # czerwona
+    #           indicators.iloc[-3]['open'] > indicators.iloc[-3]['close']):  # czerwona
+    #         buy = True
+    #     elif (indicators.iloc[-1]['morning'] == 100 and
+    #           indicators.iloc[-2]['open'] < indicators.iloc[-2]['close']):  # zielona
+    #         buy = True
+    #     elif indicators.iloc[-1]['invhammer'] == 100:
+    #         buy = True
+    #
+    #     return buy
+    #
+    #
+    # def check_sell_signals_patterns_1(indicators):
+    #     sell = False
+    #
+    #     if (indicators.iloc[-1]['hang'] == -100 and
+    #             indicators.iloc[-2]['open'] < indicators.iloc[-2]['close'] and  # zielona
+    #             indicators.iloc[-3]['open'] < indicators.iloc[-3]['close']):  # zielona
+    #         sell = True
+    #     elif (indicators.iloc[-2]['eng'] == -100 and
+    #           indicators.iloc[-1]['open'] > indicators.iloc[-1]['close'] and  # czerwona
+    #           indicators.iloc[-3]['open'] < indicators.iloc[-3]['close'] and  # zielona
+    #           indicators.iloc[-4]['open'] < indicators.iloc[-4]['close']):  # zielona
+    #         sell = True
+    #     elif (indicators.iloc[-2]['evening'] == -100 and
+    #           indicators.iloc[-1]['open'] > indicators.iloc[-1]['close']):
+    #         sell = True
+    #
+    #     return sell
 
-    def sell_sig(dataframe):
-        # if dataframe.iloc[-1]['rsi'] < 30:
-        r = randint(0, 10)
-        if r > 1:
-            return True
-        else:
-            return False
-
-    # fbot = FakeBot("../work/bot1/config.yml")
-    fbot = BacktestingBot("C:/Users/natalia/Desktop/studia/inzynierka/backend/bot/bot_app/user_files/example_config.yml")
-    res = fbot.test_strategy(calc_ind, buy_sig, sell_sig, last_n_days=3)
+    # def calc_ind(dataframe):
+    #     # dataframe['rsi'] = ta.RSI(dataframe, timeperiod=14)
+    #     return dataframe
+    #
+    # def buy_sig(dataframe):
+    #     r = randint(0,10)
+    #     if r>8:
+    #     # if dataframe.iloc[-1]['rsi'] > 70:
+    #         return True
+    #     else:
+    #         return False
+    #
+    # def sell_sig(dataframe):
+    #     # if dataframe.iloc[-1]['rsi'] < 30:
+    #     r = randint(0, 10)
+    #     if r > 1:
+    #         return True
+    #     else:
+    #         return False
+    #
+    # # fbot = FakeBot("../work/bot1/config.yml")
+    # fbot = BacktestingBot("C:/Users/natalia/Desktop/studia/inzynierka/backend/bot/bot_app/user_files/example_config.yml")
+    # res = fbot.test_strategy(calc_ind, buy_sig, sell_sig, last_n_days=3)
     # # plot_balance(res)
     # plot_profit(res)
     # plot_pairs_profit(res,fbot.config["currency_pairs"] )
