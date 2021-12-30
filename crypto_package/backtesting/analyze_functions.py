@@ -6,6 +6,7 @@ from typing import List
 from crypto_package.candles.get_candles import get_candles
 from pandas import DataFrame, to_datetime
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 from .models import AnalysisResult, Trade
 
 
@@ -87,32 +88,36 @@ def plot_candles(candles: DataFrame, trades: AnalysisResult = None, pair=None, w
     fig.show()
     # return fig
 
-def plot_indicators(indicators_df: DataFrame, indicators: List[str], width: int = 1000,
-                    height: int = 650, fig_type:str='lines'):  # indicators_df contains columns with indicators and column "date" with datetime
-    if "time" in indicators_df.columns:
-        indicators_df = indicators_df.rename(columns={"time": "date"})
-    if type(indicators_df["date"][0]) is not datetime:
-        indicators_df["date"] = to_datetime(indicators_df["date"], unit='s')
+# def plot_indicators(indicators_df: DataFrame, indicators: List[str], width: int = 1000,
+#                     height: int = 650, fig_type:str='lines'):  # indicators_df contains columns with indicators and column "date" with datetime
+#     if "time" in indicators_df.columns:
+#         indicators_df = indicators_df.rename(columns={"time": "date"})
+#     if type(indicators_df["date"][0]) is not datetime:
+#         indicators_df["date"] = to_datetime(indicators_df["date"], unit='s')
+#
+#     for ind in indicators:
+#         fig = go.Figure()
+#         fig.add_trace(go.Scatter(
+#             x=indicators_df['date'],
+#             y=indicators_df[ind],
+#             mode=fig_type,
+#             name=ind,
+#         ))
+#         fig.update_layout(
+#             title=ind,
+#             xaxis_title="time",
+#             yaxis_title="value",
+#             width=width,
+#             height=height
+#         )
+#         fig.show()
+#
 
-    for ind in indicators:
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(
-            x=indicators_df['date'],
-            y=indicators_df[ind],
-            mode=fig_type,
-            name=ind,
-        ))
-        fig.update_layout(
-            title=ind,
-            xaxis_title="time",
-            yaxis_title="value",
-            width=width,
-            height=height
-        )
-        fig.show()
 
-def plot_indicators_on_candles(indicators_df: DataFrame, indicators: List[str], width: int = 1000,
-                    height: int = 650):  # indicators_df contains columns with indicators and column "date" with datetime
+
+def plot_patterns_on_candles(indicators_df, indicators, trades=None, pair=None, show_signal=False, lines=[],
+                             width: int = 1000,
+                             height: int = 650):  # indicators_df contains columns with indicators and column "date" with datetime
     if "time" in indicators_df.columns:
         indicators_df = indicators_df.rename(columns={"time": "date"})
     if type(indicators_df["date"][0]) is not datetime:
@@ -128,17 +133,126 @@ def plot_indicators_on_candles(indicators_df: DataFrame, indicators: List[str], 
         close=indicators_df['close']))
 
     for ind in indicators:
+        xup = []
+        xdown = []
+        yup = []
+        ydown = []
+
+        for idx, row in indicators_df.iterrows():
+            if row[ind] == 100:
+                xup.append(row['date'])
+                yup.append(((row['high'] + row['low']) / 2) + 1.5 * abs(row['high'] - row['low']))
+            elif row[ind] == -100:
+                xdown.append(row['date'])
+                ydown.append(((row['high'] + row['low']) / 2) - 1.5 * abs(row['high'] - row['low']))
+
+        color = 'green' if len(indicators) <= 2 else randint(1, 500)
         fig.add_trace(go.Scatter(
-            x=indicators_df['date'],
-            y=indicators_df[ind],
+            x=xup,
+            y=yup,
             mode='markers',
             marker=dict(
-                color=randint(1,500),
+                color=color,
+                line_width=1,
+                size=8,
+            ),
+            marker_symbol='triangle-up',
+            name=ind + " bullish",
+        ))
+        color = 'red' if len(indicators) <= 2 else randint(1, 500)
+        fig.add_trace(go.Scatter(
+            x=xdown,
+            y=ydown,
+            mode='markers',
+            marker=dict(
+                color=color,
+                line_width=1,
+                size=8,
+            ),
+            marker_symbol='triangle-down',
+            name=ind + " bearish",
+        ))
+
+    for line in lines:
+        fig.add_trace(go.Scatter(
+            x=indicators_df["date"],
+            y=indicators_df[line],
+            mode='lines',
+            name=line,
+        ))
+
+    if trades is not None:
+        res = trades.trades
+
+        if pair is not None:
+            res = [t for t in trades.trades if t.pair == pair]
+
+        buy_trades_price = [tr.price for tr in res if tr.is_buy]
+        buy_trades_time = [tr.timestamp for tr in res if tr.is_buy]
+
+        sell_trades_price = [tr.price for tr in res if not tr.is_buy]
+        sell_trades_time = [tr.timestamp for tr in res if not tr.is_buy]
+
+        fig.add_trace(go.Scatter(
+            x=buy_trades_time,
+            y=buy_trades_price,
+            mode='markers',
+            name='buy trades',
+            marker_symbol='diamond',
+            marker=dict(
+                color='blue',
                 line_width=2,
                 size=7,
-            ),
-            name=ind,
+
+            )
         ))
+
+        fig.add_trace(go.Scatter(
+            x=sell_trades_time,
+            y=sell_trades_price,
+            mode='markers',
+            name='sell trades',
+            marker_symbol='square',
+            marker=dict(
+                color='yellow',
+                line_width=2,
+                size=7
+            )
+        ))
+
+        if show_signal:
+            buy_sig = [a[0] for a in trades.buy_signals]
+            buy_sig_time = [a[1] for a in trades.buy_signals]
+
+            sell_sig = [a[0] for a in trades.sell_signals]
+            sell_sig_time = [a[1] for a in trades.sell_signals]
+            fig.add_trace(go.Scatter(
+                x=buy_sig_time,
+                y=buy_sig,
+                mode='markers',
+                name='buy signal',
+                marker_symbol='diamond',
+                marker=dict(
+                    color='lightblue',
+                    line_width=2,
+                    size=7,
+
+                )
+            ))
+
+            fig.add_trace(go.Scatter(
+                x=sell_sig_time,
+                y=sell_sig,
+                mode='markers',
+                name='sell signal',
+                marker_symbol='square',
+                marker=dict(
+                    color='lightyellow',
+                    line_width=2,
+                    size=7
+                )
+            ))
+
     fig.update_layout(
         title="Indicators on candles",
         xaxis_title="time",
@@ -147,6 +261,187 @@ def plot_indicators_on_candles(indicators_df: DataFrame, indicators: List[str], 
         height=height
     )
     fig.show()
+
+
+
+def plot_indicators(indicators_df, indicators, trades=None, pair=None, show_signal=False, plot_candles=False,
+                    one_plot=None, width: int = 1000, height: int = 650,
+                    fig_type: str = 'lines'):  # indicators_df contains columns with indicators and column "date" with datetime
+    if "time" in indicators_df.columns:
+        indicators_df = indicators_df.rename(columns={"time": "date"})
+    if type(indicators_df["date"][0]) is not datetime:
+        indicators_df["date"] = to_datetime(indicators_df["date"], unit='s')
+
+    rows = 0
+    indicators_titles = []
+
+    if plot_candles or trades is not None:
+        rows += 1
+        indicators_titles = ['candles']
+
+    if one_plot is not None:
+        for idx, i in enumerate(one_plot):
+            if i == False:
+                rows += 1
+                indicators_titles.append(indicators[idx])
+            else:
+                title = indicators_titles.pop() if len(indicators_titles) > 0 else ""
+                title = title + " + " + str(indicators[idx])
+                indicators_titles.append(title)
+    else:
+        rows += len(indicators)
+        indicators_titles += [i for i in indicators]
+
+    print(indicators_titles)
+    fig = make_subplots(rows=rows, cols=1,
+                        subplot_titles=indicators_titles,
+                        shared_xaxes=True,
+                        vertical_spacing=0.05)
+
+    ridx = 0
+    if plot_candles or trades is not None:
+        ridx = 1
+        fig.add_trace(go.Candlestick(
+            x=indicators_df['date'],
+            open=indicators_df['open'],
+            high=indicators_df['high'],
+            low=indicators_df['low'],
+            close=indicators_df['close']), row=ridx, col=1
+        )
+
+        if trades is not None:
+            res = trades.trades
+
+            if pair is not None:
+                res = [t for t in trades.trades if t.pair == pair]
+
+            buy_trades_price = [tr.price for tr in res if tr.is_buy]
+            buy_trades_time = [tr.timestamp for tr in res if tr.is_buy]
+
+            sell_trades_price = [tr.price for tr in res if not tr.is_buy]
+            sell_trades_time = [tr.timestamp for tr in res if not tr.is_buy]
+
+            fig.add_trace(go.Scatter(
+                x=buy_trades_time,
+                y=buy_trades_price,
+                mode='markers',
+                name='buy trades',
+                marker_symbol='diamond',
+                marker=dict(
+                    color='blue',
+                    line_width=2,
+                    size=7,
+
+                )
+            ), row=ridx, col=1)
+
+            fig.add_trace(go.Scatter(
+                x=sell_trades_time,
+                y=sell_trades_price,
+                mode='markers',
+                name='sell trades',
+                marker_symbol='square',
+                marker=dict(
+                    color='yellow',
+                    line_width=2,
+                    size=7
+                )
+            ), row=ridx, col=1)
+
+            if show_signal:
+                buy_sig = [a[0] for a in trades.buy_signals]
+                buy_sig_time = [a[1] for a in trades.buy_signals]
+
+                sell_sig = [a[0] for a in trades.sell_signals]
+                sell_sig_time = [a[1] for a in trades.sell_signals]
+                fig.add_trace(go.Scatter(
+                    x=buy_sig_time,
+                    y=buy_sig,
+                    mode='markers',
+                    name='buy signal',
+                    marker_symbol='diamond',
+                    marker=dict(
+                        color='lightblue',
+                        line_width=2,
+                        size=7,
+
+                    )
+                ), row=ridx, col=1)
+
+                fig.add_trace(go.Scatter(
+                    x=sell_sig_time,
+                    y=sell_sig,
+                    mode='markers',
+                    name='sell signal',
+                    marker_symbol='square',
+                    marker=dict(
+                        color='lightyellow',
+                        line_width=2,
+                        size=7
+                    )
+                ), row=ridx, col=1)
+
+    for idx, ind in enumerate(indicators):
+        if one_plot is None or one_plot[idx] == False:
+            ridx += 1
+
+        fig.add_trace(go.Scatter(
+            x=indicators_df['date'],
+            y=indicators_df[ind],
+            name=ind,
+            line_color='rgb' + str((randint(0, 255), randint(0, 255), randint(0, 255)))
+        ),
+            row=ridx,
+            col=1
+        )
+
+    fig.update_layout(
+        title_text='indicators',
+        # xaxis_title="time",
+        # yaxis_title="value",
+        width=width,
+        height=height,
+        xaxis_rangeslider_visible=False,
+
+    )
+    fig.show()
+
+# def plot_indicators_on_candles(indicators_df: DataFrame, indicators: List[str], width: int = 1000,
+#                     height: int = 650):  # indicators_df contains columns with indicators and column "date" with datetime
+#     if "time" in indicators_df.columns:
+#         indicators_df = indicators_df.rename(columns={"time": "date"})
+#     if type(indicators_df["date"][0]) is not datetime:
+#         indicators_df["date"] = to_datetime(indicators_df["date"], unit='s')
+#
+#     fig = go.Figure()
+#
+#     fig.add_trace(go.Candlestick(
+#         x=indicators_df['date'],
+#         open=indicators_df['open'],
+#         high=indicators_df['high'],
+#         low=indicators_df['low'],
+#         close=indicators_df['close']))
+#
+#     for ind in indicators:
+#         fig.add_trace(go.Scatter(
+#             x=indicators_df['date'],
+#             y=indicators_df[ind],
+#             mode='markers',
+#             marker=dict(
+#                 color=randint(1,500),
+#                 line_width=2,
+#                 size=7,
+#             ),
+#             name=ind,
+#         ))
+#     fig.update_layout(
+#         title="Indicators on candles",
+#         xaxis_title="time",
+#         yaxis_title="value",
+#         width=width,
+#         height=height
+#     )
+#     fig.show()
 
 
 
