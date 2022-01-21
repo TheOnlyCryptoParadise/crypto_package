@@ -57,6 +57,15 @@ class BacktestingBot():
                 time_start = datetime.fromisoformat(time_start)
             elif type(time_start) is not datetime:
                 raise ValueError("time_start has to be a sting or a datetime")
+        elif time_end and time_start:
+            if type(time_start) is str:
+                time_start = datetime.fromisoformat(time_start)
+            elif type(time_start) is not datetime:
+                raise ValueError("time_start has to be a sting or a datetime")
+            if type(time_end) is str:
+                time_end = datetime.fromisoformat(time_end)
+            elif type(time_end) is not datetime:
+                raise ValueError("time_end has to be a sting or a datetime")
         else:
             raise ValueError("You need to provide at least time_start or last_n_days")
 

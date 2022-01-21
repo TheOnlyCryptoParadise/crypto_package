@@ -262,7 +262,19 @@ def plot_patterns_on_candles(indicators_df, indicators, trades=None, pair=None, 
     )
     fig.show()
 
+def process_plots_info(one_plot, indicators):
+    rows = 0
+    indicators_titles = []
+    for idx, i in enumerate(one_plot):
+        if i == False:
+            rows += 1
+            indicators_titles.append(indicators[idx])
+        else:
+            title = indicators_titles.pop() if len(indicators_titles) > 0 else ""
+            title = title + " + " + str(indicators[idx])
+            indicators_titles.append(title)
 
+    return rows, indicators_titles
 
 def plot_indicators(indicators_df, indicators, trades=None, pair=None, show_signal=False, plot_candles=False,
                     one_plot=None, width: int = 1000, height: int = 650,
@@ -280,14 +292,9 @@ def plot_indicators(indicators_df, indicators, trades=None, pair=None, show_sign
         indicators_titles = ['candles']
 
     if one_plot is not None:
-        for idx, i in enumerate(one_plot):
-            if i == False:
-                rows += 1
-                indicators_titles.append(indicators[idx])
-            else:
-                title = indicators_titles.pop() if len(indicators_titles) > 0 else ""
-                title = title + " + " + str(indicators[idx])
-                indicators_titles.append(title)
+        ind_rows, ind_titles = process_plots_info(one_plot, indicators)
+        rows += ind_rows
+        indicators_titles += ind_titles
     else:
         rows += len(indicators)
         indicators_titles += [i for i in indicators]
@@ -296,7 +303,10 @@ def plot_indicators(indicators_df, indicators, trades=None, pair=None, show_sign
     fig = make_subplots(rows=rows, cols=1,
                         subplot_titles=indicators_titles,
                         shared_xaxes=True,
-                        vertical_spacing=0.05)
+                        vertical_spacing=0.05,
+                        x_title="time",
+                        y_title="value"
+                        )
 
     ridx = 0
     if plot_candles or trades is not None:
@@ -310,76 +320,12 @@ def plot_indicators(indicators_df, indicators, trades=None, pair=None, show_sign
         )
 
         if trades is not None:
-            res = trades.trades
+            just_trades = trades.trades
 
             if pair is not None:
-                res = [t for t in trades.trades if t.pair == pair]
+                just_trades = [t for t in trades.trades if t.pair == pair]
 
-            buy_trades_price = [tr.price for tr in res if tr.is_buy]
-            buy_trades_time = [tr.timestamp for tr in res if tr.is_buy]
-
-            sell_trades_price = [tr.price for tr in res if not tr.is_buy]
-            sell_trades_time = [tr.timestamp for tr in res if not tr.is_buy]
-
-            fig.add_trace(go.Scatter(
-                x=buy_trades_time,
-                y=buy_trades_price,
-                mode='markers',
-                name='buy trades',
-                marker_symbol='diamond',
-                marker=dict(
-                    color='blue',
-                    line_width=2,
-                    size=7,
-
-                )
-            ), row=ridx, col=1)
-
-            fig.add_trace(go.Scatter(
-                x=sell_trades_time,
-                y=sell_trades_price,
-                mode='markers',
-                name='sell trades',
-                marker_symbol='square',
-                marker=dict(
-                    color='yellow',
-                    line_width=2,
-                    size=7
-                )
-            ), row=ridx, col=1)
-
-            if show_signal:
-                buy_sig = [a[0] for a in trades.buy_signals]
-                buy_sig_time = [a[1] for a in trades.buy_signals]
-
-                sell_sig = [a[0] for a in trades.sell_signals]
-                sell_sig_time = [a[1] for a in trades.sell_signals]
-                fig.add_trace(go.Scatter(
-                    x=buy_sig_time,
-                    y=buy_sig,
-                    mode='markers',
-                    name='buy signal',
-                    marker_symbol='diamond',
-                    marker=dict(
-                        color='lightblue',
-                        line_width=2,
-                        size=7,
-
-                    )
-                ), row=ridx, col=1)
-
-                fig.add_trace(go.Scatter(
-                    x=sell_sig_time,
-                    y=sell_sig,
-                    mode='markers',
-                    name='sell signal',
-                    marker_symbol='square',
-                    marker=dict(
-                        color='lightyellow',
-                        line_width=2,
-                        size=7
-                    )
-                ), row=ridx, col=1)
+            add_trades(fig, just_trades, show_signal, ridx)
 
     for idx, ind in enumerate(indicators):
         if one_plot is None or one_plot[idx] == False:
@@ -397,14 +343,79 @@ def plot_indicators(indicators_df, indicators, trades=None, pair=None, show_sign
 
     fig.update_layout(
         title_text='indicators',
-        # xaxis_title="time",
-        # yaxis_title="value",
         width=width,
         height=height,
         xaxis_rangeslider_visible=False,
 
     )
     fig.show()
+
+def add_trades(fig, res, show_signal, ridx):
+    buy_trades_price = [tr.price for tr in res if tr.is_buy]
+    buy_trades_time = [tr.timestamp for tr in res if tr.is_buy]
+
+    sell_trades_price = [tr.price for tr in res if not tr.is_buy]
+    sell_trades_time = [tr.timestamp for tr in res if not tr.is_buy]
+
+    fig.add_trace(go.Scatter(
+        x=buy_trades_time,
+        y=buy_trades_price,
+        mode='markers',
+        name='buy trades',
+        marker_symbol='diamond',
+        marker=dict(
+            color='blue',
+            line_width=2,
+            size=7,
+
+        )
+    ), row=ridx, col=1)
+
+    fig.add_trace(go.Scatter(
+        x=sell_trades_time,
+        y=sell_trades_price,
+        mode='markers',
+        name='sell trades',
+        marker_symbol='square',
+        marker=dict(
+            color='yellow',
+            line_width=2,
+            size=7
+        )
+    ), row=ridx, col=1)
+
+    if show_signal:
+        buy_sig = [a[0] for a in trades.buy_signals]
+        buy_sig_time = [a[1] for a in trades.buy_signals]
+
+        sell_sig = [a[0] for a in trades.sell_signals]
+        sell_sig_time = [a[1] for a in trades.sell_signals]
+        fig.add_trace(go.Scatter(
+            x=buy_sig_time,
+            y=buy_sig,
+            mode='markers',
+            name='buy signal',
+            marker_symbol='diamond',
+            marker=dict(
+                color='lightblue',
+                line_width=2,
+                size=7,
+
+            )
+        ), row=ridx, col=1)
+
+        fig.add_trace(go.Scatter(
+            x=sell_sig_time,
+            y=sell_sig,
+            mode='markers',
+            name='sell signal',
+            marker_symbol='square',
+            marker=dict(
+                color='lightyellow',
+                line_width=2,
+                size=7
+            )
+        ), row=ridx, col=1)
 
 # def plot_indicators_on_candles(indicators_df: DataFrame, indicators: List[str], width: int = 1000,
 #                     height: int = 650):  # indicators_df contains columns with indicators and column "date" with datetime
