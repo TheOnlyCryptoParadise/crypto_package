@@ -501,6 +501,50 @@ def calculate_profit_from_trades(transactions: List[Trade], start_datetime, end_
 
     return x_v, y_v
 
+def calculate_bot_profit(transactions: List[Trade], start_datetime, end_datetime, start_amount):
+    transactions.sort(key=lambda x: x.timestamp)
+    tr_buy_amount = {}
+    start = 0
+    end = len(transactions)
+    profit = 0
+    profit_value = 0
+
+    x_v = [start_datetime]
+    y_v = [profit]
+
+    for trade_id in range(start, end):
+        trade = transactions[trade_id]
+        results = []
+        if trade.amount in tr_buy_amount.keys():
+            results = tr_buy_amount.get(trade.amount)
+
+        if trade.is_buy:
+            if len(results) == 0:
+                results = [trade]
+            else:
+                results.append(trade)
+            tr_buy_amount.update({trade.amount: results})
+        else:
+            oldest_buy = results.pop(0)
+            if len(results) > 0:
+                tr_buy_amount.update({trade.amount: results})
+            else:
+                tr_buy_amount.pop(trade.amount)
+
+            profit_value += trade.amount * trade.price - trade.amount * oldest_buy.price
+            # buy_costs += trade.amount * oldest_buy.price
+            profit = profit_value / start_amount
+            # profit = ((trade.amount * trade.price) - (trade.amount * oldest_buy.price)) / (
+            #             trade.amount * oldest_buy.price)
+
+            y_v.append(profit*100)
+            x_v.append(trade.timestamp)
+
+    x_v.append(end_datetime)
+    y_v.append(profit*100)
+
+    return x_v, y_v
+
 
 def plot_profit(trades: AnalysisResult, width: int = 1000, height: int = 650):
     x, y = calculate_profit_from_trades(trades.trades, trades.start_datetime, trades.end_datetime)
@@ -521,6 +565,27 @@ def plot_profit(trades: AnalysisResult, width: int = 1000, height: int = 650):
     fig.show()
 
     # return fig
+
+def plot_bot_profit(trades: AnalysisResult, start_amount, width: int = 1000, height: int = 650):
+    x, y = calculate_bot_profit(trades.trades, trades.start_datetime, trades.end_datetime, start_amount)
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=x,
+        y=y,
+        mode='lines+markers',
+        name="profit",
+    ))
+    fig.update_layout(
+        title='BacktestingBots profit',
+        xaxis_title="time",
+        yaxis_title="value [%]",
+        width=width,
+        height=height
+    )
+    fig.show()
+
+    # return fig
+
 
 
 def plot_profit_per_pair(trades: AnalysisResult, pairs: List[str] = None, width: int = 1000, height: int = 650):
